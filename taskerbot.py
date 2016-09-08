@@ -26,7 +26,7 @@ class Bot(object):
             logging.debug('Mods loaded: %s.', sub['mods'])
             logging.debug('Loading reasons…')
             sub['reasons'] = yaml.load(html.unescape(
-                self.r.get_wiki_page(subreddit, 'taskerbot').content_md))
+                self.r.get_wiki_page(subreddit, 'RedditItalyBot').content_md))
             logging.debug('Reasons loaded.')
 
     def refresh_sub(self, subreddit):
@@ -38,7 +38,7 @@ class Bot(object):
         logging.debug('Mods loaded: %s.', sub['mods'])
         logging.debug('Loading reasons…')
         sub['reasons'] = yaml.load(html.unescape(
-            self.r.get_wiki_page(subreddit, 'taskerbot').content_md))
+            self.r.get_wiki_page(subreddit, 'RedditItalyBot').content_md))
         logging.debug('Reasons loaded.')
 
     def check_comments(self, subreddit):
@@ -50,7 +50,7 @@ class Bot(object):
                 continue
 
             # Check for @rule command.
-            match = re.search(r'@rule (\w*)', comment.body)
+            match = re.search(r'$(\w*)', comment.body)
             if match:
                 rule = match.group(1)
                 logging.debug('Rule %s matched.', rule)
@@ -76,7 +76,7 @@ class Bot(object):
                     logging.debug('Removed comment.')
 
             # Check for @ban command.
-            match = re.search(r'@ban (\d*) "([^"]*)" "([^"]*)"', comment.body)
+            match = re.search(r'$ban (\d*) "([^"]*)" "([^"]*)"', comment.body)
             if match:
                 duration = match.group(1)
                 reason = match.group(2)
@@ -96,7 +96,7 @@ class Bot(object):
         for mail in self.r.get_unread(True, True):
             mail.mark_as_read()
             logging.debug('New mail: "%s".', mail.body)
-            match = re.search(r'@refresh (.*)', mail.body)
+            match = re.search(r'$update (.*)', mail.body)
             if not match:
                 continue
             subreddit = match.group(1)
@@ -105,14 +105,14 @@ class Bot(object):
                 if mail.author.name in sub['mods']:
                     self.refresh_sub(subreddit)
                     self.r.send_message(
-                        mail.author.name, "Taskerbot refresh",
+                        mail.author.name, "RedditItalyBot update",
                         "Refreshed mods and reasons for {}!".format(subreddit))
                 else:
                     self.r.send_message(
-                        mail.author.name, "Taskerbot refresh",
+                        mail.author.name, "RedditItalyBot refresh",
                         ("Unauthorized: not an r/{} mod").format(subreddit))
             else:
-                self.r.send_message(mail.author.name, "Taskerbot refresh",
+                self.r.send_message(mail.author.name, "RedditItalyBot refresh",
                                     "Unrecognized sub:  {}.".format(subreddit))
 
     def run(self):
